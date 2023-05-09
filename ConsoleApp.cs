@@ -8,7 +8,7 @@ using System;
 namespace ConsoleAppXrm
 {
 
-    internal class AggregateFetchXML
+    internal class ConsoleAppD365
     {
         static void Main(string[] args)
         {
@@ -23,8 +23,8 @@ namespace ConsoleAppXrm
                 CrmServiceClient service = new CrmServiceClient(connectionString);
 
                 //Create the IOrganizationService:
-                oServiceProxy = (IOrganizationService)service.OrganizationWebProxyClient != null ?
-                        (IOrganizationService)service.OrganizationWebProxyClient :
+                oServiceProxy = service.OrganizationWebProxyClient != null ?
+                       service.OrganizationWebProxyClient :
                         (IOrganizationService)service.OrganizationServiceProxy;
 
                 Console.WriteLine("Validating Connection");
