@@ -4,7 +4,7 @@ Step 1: Create new Project
 Step 2: Select Console App (.NET Framework)
 Step 3: Add NuGet Package and browse for 'dynamics 365'
 Step 4: Select 'Microsoft.CrmSdk.XrmTooling.CoreAssembly' and click install
-Step 5: Paste the code below and tweak the connection string:
+Step 5: Paste the code below and tweak the connectionString identifier:
 
 static void Main(string[] args)
         {
