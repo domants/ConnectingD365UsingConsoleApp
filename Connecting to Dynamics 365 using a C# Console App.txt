@@ -1,0 +1,51 @@
+Connecting to Dynamics 365 using a C# Console App
+
+Step 1: Create new Project
+Step 2: Select Console App (.NET Framework)
+Step 3: Add NuGet Package and browse for 'dynamics 365'
+Step 4: Select 'Microsoft.CrmSdk.XrmTooling.CoreAssembly' and click install
+Step 5: Paste the code below and tweak the connection string:
+
+static void Main(string[] args)
+        {
+            IOrganizationService oServiceProxy;
+            try
+            {
+                Console.WriteLine("Setting up Dynamics 365 connection");
+
+                string connectionString = "AuthType=OAuth;Username=<username>;Password=<password>;Url=<instanceURL>;AppId=51f81489-12ee-4a9e-aaae-a2591f45987d;RedirectUri=app://58145B91-0C36-4500-8554-080854F2AC97;LoginPrompt=Auto";
+
+                //Create the Dynamics 365 Connection:
+                CrmServiceClient service = new CrmServiceClient(connectionString);
+
+                //Create the IOrganizationService:
+                oServiceProxy = (IOrganizationService)service.OrganizationWebProxyClient != null ?
+                        (IOrganizationService)service.OrganizationWebProxyClient :
+                        (IOrganizationService)service.OrganizationServiceProxy;
+
+                Console.WriteLine("Validating Connection");
+
+                if (oServiceProxy != null)
+                {
+                    //Get the current user ID:
+                    Guid userid = ((WhoAmIResponse)oServiceProxy.Execute(new WhoAmIRequest())).UserId;
+
+                    if (userid != Guid.Empty)
+                    {
+                        Console.WriteLine("Connection Successful!");
+                    }
+                }
+                else
+                {
+                    Console.WriteLine("Connection failed... Please check the credential or Url you insert");
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("Error - " + ex.ToString());
+            }
+
+            Console.Read();
+        }
+
+Step 6: Run the program to test if successfully connected.
