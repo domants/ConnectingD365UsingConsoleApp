@@ -37,7 +37,7 @@ namespace ConsoleAppXrm
                     if (userid != Guid.Empty)
                     {
                         Console.WriteLine("Connection Successful!");
-
+                        Console.WriteLine();
                         //business logic goes here...
 
 
@@ -49,7 +49,7 @@ namespace ConsoleAppXrm
 
                         Console.WriteLine(guid.ToString());
                         */
-
+                        /*-----------------------------------------------------Total email count that is not null--------------------------------------------------------------------------------------*/
                         var query = @"<fetch version='1.0' output-format='xml-platform' mapping='logical' no-lock='false' distinct='true' aggregate='true'>
                                             <entity name='contact'>
                                                     <attribute name='fullname' alias='fullNameCount' aggregate='count'/>
@@ -64,12 +64,32 @@ namespace ConsoleAppXrm
 
                         foreach (var result in results.Entities)
                         {
-                            Console.WriteLine(((AliasedValue)result["emailCount"]).Value.ToString());
+                            var emailCount = ((AliasedValue)result.Attributes["emailCount"]).Value.ToString();
+                            Console.WriteLine($"Total email acount that is not null: {emailCount}");
+                        }
+
+                        Console.WriteLine();
+
+                        /*-----------------------------------------------------Total Oppty Est Revenue records--------------------------------------------------------------------------------------------*/
+                        string query1 = @"<fetch aggregate='true' >
+                                              <entity name='opportunity' >
+                                                <attribute name='estimatedvalue' aggregate='sum' alias='totalrevenue' />
+                                              </entity>
+                                            </fetch>";
+
+                        EntityCollection results1 = service.RetrieveMultiple(new FetchExpression(query1));
+
+                        foreach (var result in results1.Entities)
+                        {
+                            var returnResult = ((Money)((AliasedValue)result["totalrevenue"]).Value).Value;
+                            Console.WriteLine($"Total Oppty Est. Revenue: {returnResult.ToString("c2")}");
                         }
 
 
-                        /*-----------------------------------------------------------------------------------------------------------------------------------------------------------------------*/
-                        var query1 = @"<fetch version='1.0' output-format='xml-platform' mapping='logical' no-lock='false' distinct='true'>
+                        Console.WriteLine();
+
+                        /*---------------------------------------------------------Loop through contact record--------------------------------------------------------------------------------------------*/
+                        var query2 = @"<fetch version='1.0' output-format='xml-platform' mapping='logical' no-lock='false' distinct='true'>
                                         <entity name='contact'>
                                             <attribute name='entityimage_url'/>
                                             <attribute name='fullname'/>
@@ -84,23 +104,54 @@ namespace ConsoleAppXrm
                                         </entity>
                                         </fetch>";
 
-                        Console.WriteLine();
-
 
                         //Return all of the contact that has null value of emails
-                        EntityCollection results1 = service.RetrieveMultiple(new FetchExpression(query1));
+                        EntityCollection results2 = service.RetrieveMultiple(new FetchExpression(query2));
 
-                        for (int i = 0; i < results1.Entities.Count; i++)
+                        Console.WriteLine("Contact emailaddress that is not null");
+                        for (int i = 0; i < results2.Entities.Count; i++)
                         {
-                            Console.WriteLine($"Index:{i} {results1[i].Attributes["fullname"]}");
+                            Console.WriteLine($"Index:{i} {results2[i].Attributes["fullname"]}");
                         }
 
                         /*
-                       foreach (var result in results1.Entities)
+                       foreach (var result in results2.Entities)
                        {
                            Console.WriteLine($"Index:{index += 1} {result.Attributes["fullname"].ToString()}");
                        }
                        */
+
+                        /*------------------------------------------------------Create new Oppty and task for the oppty created-------------------------------------------------------------------------*/
+                        /*
+                        var oppty = new Entity("opportunity");
+                        oppty.Attributes.Add("name", "This is my new topic 1");
+                        Guid guidOppty = service.Create(oppty);
+                        Console.WriteLine($"Oppty is created! Id is: {guidOppty.ToString()}");
+                        Console.WriteLine($"Oppty logical name: {oppty.LogicalName}");
+                        Console.WriteLine($"Oppty id: {guidOppty}");
+
+
+                        var task = new Entity("task");
+                        task.Attributes.Add("regardingobjectid", new EntityReference(oppty.LogicalName, guidOppty));
+                        task.Attributes.Add("subject", $"New task is created for oppty {oppty.Attributes["name"].ToString()}");
+
+                        Guid guidTask = service.Create(task);
+                        Console.WriteLine($"Task is created! Id is: {guidTask.ToString()}");
+                        */
+
+                        /*------------------------------------------------------Retrieve Oppty record and update-------------------------------------------------------------------------*/
+                        Entity opptyRecord = service.Retrieve("opportunity", new Guid("3cbbd39d-d3f0-ea11-a815-000d3a33f3c3"), new ColumnSet("name", "parentcontactid", "description", "msdyn_forecastcategory", "purchaseprocess"));
+                        Console.WriteLine(opptyRecord.Attributes["name"].ToString());
+                        Console.WriteLine(opptyRecord.Attributes["description"].ToString());
+                        Console.WriteLine(((EntityReference)opptyRecord.Attributes["parentcontactid"]).Name);
+                        Console.WriteLine(opptyRecord.FormattedValues["msdyn_forecastcategory"].ToString());
+                        Console.WriteLine(opptyRecord.FormattedValues["purchaseprocess"].ToString());
+
+
+                        if (opptyRecord.Attributes.Contains("purchaseprocess"))
+                            opptyRecord.Attributes["purchaseprocess"] = new OptionSetValue(0);//individual
+
+                        service.Update(opptyRecord);
                     }
                 }
                 else
