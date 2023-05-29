@@ -3,3 +3,48 @@ Retrieve Multiple:
 1.QueryExpression
 2.Linq
 3.Fetchxml
+
+
+
+
+/*---------------------------------------------------------Loop through contact record--------------------------------------------------------------------------------------------*/
+                        var query2 = @"<fetch version='1.0' output-format='xml-platform' mapping='logical' no-lock='false' distinct='true'>
+                                        <entity name='contact'>
+                                            <attribute name='entityimage_url'/>
+                                            <attribute name='fullname'/>
+                                            <order attribute='fullname' descending='false'/>
+                                            <attribute name='parentcustomerid'/>
+                                            <attribute name='telephone1'/>
+                                            <attribute name='emailaddress1'/>
+                                            <attribute name='contactid'/>
+                                        <filter type='and'>
+                                            <condition attribute='emailaddress1' operator='not-null'/>
+                                        </filter>
+                                        </entity>
+                                        </fetch>";
+
+
+                        //Return all of the contact that has null value of emails
+                        EntityCollection results2 = service.RetrieveMultiple(new FetchExpression(query2));
+
+                        Console.WriteLine("Contact emailaddress that is not null");
+                        for (int i = 0; i < results2.Entities.Count; i++)
+                        {
+                            Console.WriteLine($"Index:{i} {results2[i].Attributes["fullname"]}");
+                        }
+                        
+                        
+                      
+  /*------------------------------------------------------Retrieve Oppty record and update-------------------------------------------------------------------------*/
+                        Entity opptyRecord = service.Retrieve("opportunity", new Guid("3cbbd39d-d3f0-ea11-a815-000d3a33f3c3"), new ColumnSet("name", "parentcontactid", "description", "msdyn_forecastcategory", "purchaseprocess"));
+                        Console.WriteLine(opptyRecord.Attributes["name"].ToString());
+                        Console.WriteLine(opptyRecord.Attributes["description"].ToString());
+                        Console.WriteLine(((EntityReference)opptyRecord.Attributes["parentcontactid"]).Name);
+                        Console.WriteLine(opptyRecord.FormattedValues["msdyn_forecastcategory"].ToString());
+                        Console.WriteLine(opptyRecord.FormattedValues["purchaseprocess"].ToString());
+
+
+                        if (opptyRecord.Attributes.Contains("purchaseprocess"))
+                            opptyRecord.Attributes["purchaseprocess"] = new OptionSetValue(0);//individual
+
+                        service.Update(opptyRecord);
